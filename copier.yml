@@ -58,7 +58,6 @@ _exclude:
     - ".ignore*"
 
 _skip_if_exists:
-    - requirements-app.txt
     - requirements-test.txt
     - .gitignore
     - jenkinsfile-cicd.groovy
