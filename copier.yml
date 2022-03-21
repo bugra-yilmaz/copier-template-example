@@ -60,7 +60,6 @@ _exclude:
 _skip_if_exists:
     - requirements-test.txt
     - .gitignore
-    - jenkinsfile-cicd.groovy
 
 
 # Until v5, Copier used different tags from Jinja (the underling template lib).
