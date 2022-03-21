@@ -43,9 +43,9 @@ Boolean runE2EAutomatically = env.CHANGE_TARGET in ['master', 'staging']
 String VERSION_TAG = null
 
 try {
-    node({{ AGENT }}) {
+    node('{{ AGENT }}') {
         stage('Checkout') {
-            dir ({{ PROJECT_DIR }}) {
+            dir ('{{ PROJECT_DIR }}') {
                 deleteDir()
                 checkout scm
                 VERSION_TAG = commonLib.readLocalVersionTag()
