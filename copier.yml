@@ -1,0 +1,76 @@
+PROJECT_GIT_URL:
+    type: str
+    help: Git repository https URL *without the protocol* (e.g. tools.adidas-group.com/bitbucket/scm/cg/<repository>.git)
+
+PROJECT_DIR:
+    type: str
+    help: Project directory reserved for this project S3 paths and in Jenkins
+
+DEV_BUCKET:
+    type: str
+    help: Bucket where application artifacts and resources (data, models, predictions, etc.) are stored for the development environment
+    default: das-dev-applications-eu-west-1-de20
+
+STAGING_BUCKET:
+    type: str
+    help: Bucket where application artifacts and resources (data, models, predictions, etc.) are stored for the staging environment
+    default: "{{ DEV_BUCKET }}"
+
+PROD_BUCKET:
+    type: str
+    help: Bucket where application artifacts and resources (data, models, predictions, etc.) are stored for the production environment
+    default: das-prod-applications-eu-west-1-de20
+
+USE_PYSPARK:
+    type: bool
+    help: Whether to include scripts for running pyspark applications
+    default: True
+
+AGENT:
+    type: str
+    help: Jenkins agent tag to use when requesting Jenkins workers
+    default: incubation-lite
+
+SVC_CORTEX_CREDENTIALS:
+    type: str
+    help: Alias for the git credentials registered in Jenkins
+    default: 54b31b56-a912-11ec-b909-0242ac120002
+
+WARNING_THIS_IS_TEMPLATED:
+    type: str
+    help: Warning message for templated files (just accept the default, please)
+    default: |
+        #===================================================================================
+        # THIS IS A TEMPLATED FILE; NEVER EDIT MANUALLY
+        #
+        # These configurations should not be modified here, they are handled by the Copier
+        # tool and the DICE template. If you need to change any implementation in this file,
+        # please consider if they are generic enough to be included in the template, or
+        # use a project specific file for your needs. Instructions can be found in:
+        # https://tools.adidas-group.com/bitbucket/projects/CG/repos/daa_eds_python_template
+        #===================================================================================
+
+
+_exclude:
+    - .git
+    - README.md
+    - copier.yml
+    - ".ignore*"
+
+_skip_if_exists:
+    - requirements-app.txt
+    - requirements-test.txt
+    - .gitignore
+    - jenkinsfile-cicd.groovy
+
+
+# Until v5, Copier used different tags from Jinja (the underling template lib).
+# When updating to v6, these envops configs can be deleted because they will be the default.
+_envops:
+    block_start_string: "{%"
+    block_end_string: "%}"
+    comment_start_string: "{#"
+    comment_end_string: "#}"
+    variable_start_string: "{{"
+    variable_end_string: "}}"
+    keep_trailing_newline: true

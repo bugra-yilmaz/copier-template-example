@@ -1,0 +1,83 @@
+#!groovy
+/*
+{{ WARNING_THIS_IS_TEMPLATED }}*/
+
+@Library(['MyJenkinsLibrary@0.1']) _
+
+// Load project's commonLib
+library identifier: "commonLib@${tools.git.getBranchName()}", retriever: modernSCM([
+    $class: 'GitSCMSource',
+    remote: 'https://{{ PROJECT_GIT_URL }}',
+    credentialsId: '{{ SVC_CORTEX_CREDENTIALS }}'
+])
+
+// Project definitions
+String PIPELINE_NAME = 'CI/CD - {{ PROJECT_DIR }}'
+
+// Add defaults for log retention
+meta.pipelines.withDefaults([
+    // Pipeline parameters
+    parameters([
+        booleanParam(
+            name: 'Run E2E test',
+            defaultValue: false,
+            description: 'Run the application pipeline with the triggered branch' +
+                        ' (normally E2E test is done only when merging to staging and master)'),
+    ])
+])
+
+// -------------------------------
+// Main
+
+// Read pipeline parameters
+String BRANCH_NAME = tools.git.getBranchName()
+String DTAP = (BRANCH_NAME == 'master') ? 'production' : (BRANCH_NAME == 'staging' ? 'staging' : 'development')
+
+echo "dtap: $DTAP\nbranch: $BRANCH_NAME"
+commonLib.setDisplayName(BRANCH_NAME)
+
+// An e2e test is expensive (time & cost), so only run it in a meaningful step of the CI/CD flow.
+Boolean runE2EAutomatically = env.CHANGE_TARGET in ['master', 'staging']
+
+// Define global variables to be updated afterwards
+String VERSION_TAG = null
+
+try {
+    node({{ AGENT }}) {
+        stage('Checkout') {
+            dir ({{ PROJECT_DIR }}) {
+                deleteDir()
+                checkout scm
+                VERSION_TAG = commonLib.readLocalVersionTag()
+                commonLib.setDisplayName(VERSION_TAG)
+            }
+        }
+
+        stage('Unit tests') {
+            // Run unit tests
+        }
+
+        stage('Deploy') {
+            // Deploy new version
+        }
+    }
+
+    stage('E2E test') {
+        if(['Run E2E test'] || runE2EAutomatically) {
+            // Run E2E test
+        }
+    }
+
+    currentBuild.result = 'SUCCESS'
+}
+catch (Exception e) {
+    currentBuild.result = 'FAILURE'
+    println """
+    ------------------------------------------
+    $e
+    ------------------------------------------"""
+    throw e
+}
+finally {
+    sendTeamsNotification(PIPELINE_NAME, DTAP, BRANCH_NAME, VERSION_TAG)  // a function imported from MyJenkinsLibrary
+}
